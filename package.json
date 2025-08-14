@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "build:gh": "cross-env GITHUB_PAGES=true next build",
-    "deploy:gh": "pnpm run build:gh && node -e \"fs=require('fs');fs.mkdirSync('out',{recursive:true});fs.closeSync(fs.openSync('out/.nojekyll','w'))\" && git add -f out && git commit -m \"deploy: gh-pages\" || echo skip && git branch -D gh-pages-deploy 2>NUL || echo skip && git subtree split --prefix out -b gh-pages-deploy && git push -f origin gh-pages-deploy:gh-pages && git branch -D gh-pages-deploy",
+    "build:gh": "cross-env GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/VutriumSite next build",
+    "deploy:gh": "pnpm run build:gh && node -e \"fs=require('fs');fs.mkdirSync('out',{recursive:true});fs.closeSync(fs.openSync('out/.nojekyll','w'));try{fs.copyFileSync('out/vutrium-logo.png','out/favicon.ico')}catch(e){}\" && git add -f out && git commit -m \"deploy: gh-pages\" || echo skip && git branch -D gh-pages-deploy 2>NUL || echo skip && git subtree split --prefix out -b gh-pages-deploy && git push -f origin gh-pages-deploy:gh-pages && git branch -D gh-pages-deploy",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
