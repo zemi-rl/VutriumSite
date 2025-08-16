@@ -25,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/vutrium-logo.png`} />
+        <meta name="google-site-verification" content="ubv9E8pjBYOsUsTHcizfnVa0xZF9uw7LldzJ-9yxHDI" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
@@ -33,7 +34,7 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body className="vutrium-theme">{children}</body>
     </html>
   )
 }

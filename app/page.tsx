@@ -1,69 +1,115 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Download, Rocket, Eye, MessageSquare, Bot, Cpu, HardDrive, Monitor, AlertTriangle, Github, ExternalLink } from "lucide-react"
+import { Download, Rocket, Eye, MessageSquare, Bot, Cpu, HardDrive, Monitor, AlertTriangle, Github, ExternalLink, Menu, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import FlowAnimation from "@/components/flow-animation"
+import { useState } from "react"
 
 export default function VutriumPage() {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ""
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/30 backdrop-blur">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="#" className="flex items-center gap-2">
-            <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={28} height={28} className="rounded-sm" />
-            <span className="text-sm font-semibold tracking-wider text-white/90">VUTRIUM</span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#how" className="hover:text-white transition-colors">How it works</a>
-            <a href="#download" className="hover:text-white transition-colors">Download</a>
-            <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Template</a>
-            <a href="https://github.com/tntgamer685347/VutriumBot" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Legacy</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Button size="sm" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" asChild>
-              <a href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" download>
-                <Download className="mr-2 h-4 w-4" /> Download
-              </a>
-            </Button>
+    <div className="min-h-screen vutrium-theme">
+      {/* Header adapted to the gpt5-high.html structure */}
+      <header className="site-header">
+        <div className="wrap nav">
+          <div className="brand">
+            <a href={`${basePath}/`} className="flex items-center gap-2">
+              <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={40} height={40} className="rounded-2xl border border-white/10" />
+            </a>
+            <div className="brand__name">
+              <span className="brand__title">Vutrium</span>
+              <span className="badge">Beta • in development</span>
+            </div>
           </div>
+
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2 text-white/70 hover:text-white transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+
+          {/* Desktop navigation */}
+          <nav className="nav__links !hidden md:!flex" aria-label="primary">
+            <a href={`${basePath}/#features`}>Features</a>
+            <a href={`${basePath}/#how`}>How it Works</a>
+            <a href={`${basePath}/#download`} className="btn btn--ghost">Download</a>
+            <a href="https://needlesspage819.github.io/VutriumSite/resellers/" className="btn border-b-2 border-white/30">Resellers</a>
+            <a href="https://discord.gg/6qFa34HUqB" target="_blank" rel="noopener noreferrer" className="btn">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+              Discord
+            </a>
+            <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener noreferrer">Template</a>
+            <a href="https://github.com/tntgamer685347/VutriumBot" target="_blank" rel="noopener noreferrer">Legacy</a>
+          </nav>
         </div>
+
+        {/* Mobile navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-black/90 backdrop-blur-xl border-t border-white/10">
+            <nav className="wrap py-4 space-y-3" aria-label="mobile primary">
+              <a href={`${basePath}/#features`} className="block py-2 text-white/80 hover:text-white transition-colors">Features</a>
+              <a href={`${basePath}/#how`} className="block py-2 text-white/80 hover:text-white transition-colors">How it Works</a>
+              <a href={`${basePath}/#download`} className="block py-2 text-white/80 hover:text-white transition-colors">Download</a>
+              <a href="https://needlesspage819.github.io/VutriumSite/resellers/" className="block py-2 text-white border-b border-white/30">Resellers</a>
+              <a href="https://discord.gg/6qFa34HUqB" target="_blank" rel="noopener noreferrer" className="block py-2 text-white/80 hover:text-white transition-colors flex items-center gap-2">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+                Discord
+              </a>
+              <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener noreferrer" className="block py-2 text-white/80 hover:text-white transition-colors">Template</a>
+              <a href="https://github.com/tntgamer685347/VutriumBot" target="_blank" rel="noopener noreferrer" className="block py-2 text-white/80 hover:text-white transition-colors">Legacy</a>
+            </nav>
+          </div>
+        )}
       </header>
 
-      {/* Hero */}
-      <section className="relative">
-        <div className="container mx-auto px-4 py-20">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div className="space-y-6 text-center lg:text-left">
-              <Badge className="bg-purple-500/15 text-purple-200 border-purple-500/30">Beta in Development</Badge>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-white">
-                Rocket League Aid, reimagined
-              </h1>
-              <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto lg:mx-0">
-                Advanced visuals, smart chat tools, and AI assistance built for a seamless, human-like experience.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" asChild>
-                  <a href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" download>
-                    <Download className="mr-2 h-5 w-5" /> Download Vutrium.exe
-                  </a>
-                </Button>
-                <Button size="lg" variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10" asChild>
-                  <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener noreferrer">
-                    <Github className="mr-2 h-5 w-5" /> RLSDK Template
-                  </a>
-                </Button>
-              </div>
+      {/* Hero adapted to gpt5-high.html layout */}
+      <section className="hero">
+        <div className="heroGrid" aria-hidden="true"></div>
+        <div className="wrap">
+          <div>
+            <div className="eyebrow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M3 16h10M7 8h10" stroke="currentColor" opacity="0.7" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Rocket League AI + SDK
             </div>
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-6 shadow-[0_0_40px_-10px_rgba(168,85,247,0.35)]">
-                <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={220} height={220} className="drop-shadow-2xl" />
-              </div>
+            <h1>
+              Elevate your flow with
+              {" "}
+              <span className="grad">visuals, AI, and in‑process control.</span>
+            </h1>
+            <p className="sub">
+              Vutrium blends a real‑time internal SDK with assistive overlays and bot integration. It can read game
+              state and drive inputs through a DLL bridge — designed for experiments, training, and tooling.
+            </p>
+            <div className="hero__cta">
+              <a className="btn btn--primary" href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" download>
+                <Download className="h-4 w-4" />
+                Download Vutrium.exe
+              </a>
+              <a className="btn" href={`${basePath}/#how`}>
+                <Eye className="h-4 w-4" />
+                Learn how it works
+              </a>
             </div>
+          </div>
+
+          {/* Right panel aesthetic (uses your existing image content) */}
+          <div className="panel grid place-items-center">
+            <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={320} height={320} className="rounded-2xl drop-shadow-2xl" />
           </div>
         </div>
       </section>
@@ -201,14 +247,12 @@ export default function VutriumPage() {
 
       {/* How it works */}
       <section id="how" className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center text-white mb-8">How it works</h2>
 
-          <Card className="bg-white/[0.02] border-white/10 backdrop-blur mb-8">
-            <CardContent className="p-8">
-              <FlowAnimation />
-            </CardContent>
-          </Card>
+          <div className="mb-8">
+            <FlowAnimation />
+          </div>
 
           <Card className="bg-white/[0.02] border-white/10 backdrop-blur">
             <CardContent className="p-8">
@@ -369,16 +413,14 @@ export default function VutriumPage() {
           <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Download Vutrium and experience the next level of Rocket League gameplay assistance.
           </p>
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-4 text-xl font-semibold shadow-2xl hover:shadow-purple-500/25 transition-all duration-300"
-            asChild
+          <a 
+            href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" 
+            download
+            className="btn btn--primary inline-flex items-center gap-3 px-12 py-4 text-xl font-semibold"
           >
-            <a href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" download>
-              <Download className="mr-3 h-6 w-6" />
-              Download Vutrium.exe
-            </a>
-          </Button>
+            <Download className="h-6 w-6" />
+            Download Vutrium.exe
+          </a>
         </div>
       </section>
 
@@ -387,9 +429,9 @@ export default function VutriumPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center space-y-4">
             <div className="flex justify-center">
-              <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={60} height={60} className="opacity-80" />
+              <Image src={`${basePath}/vutrium-logo.png`} alt="Vutrium Logo" width={60} height={60} className="rounded-2xl opacity-80" />
             </div>
-            <p className="text-white/60">© 2024 Vutrium. Educational and experimental use only.</p>
+            <p className="text-white/60">© 2025 Vutrium. Educational and experimental use only.</p>
             <p className="text-sm text-white/40 max-w-2xl mx-auto">
               The developers are not responsible for any account bans or disciplinary actions taken by Psyonix or Epic
               Games. Use at your own risk.

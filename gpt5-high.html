@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vutrium — Rocket League Ai + SDK (Beta)</title>
+  <meta name="description" content="Vutrium is a Rocket League Ai + internal SDK. Visual overlays, AI chat, embedded Nexto bot, splitscreen, and more. Beta, use at your own risk." />
+  <meta name="theme-color" content="#8b5cf6" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root{
+      --bg: #070914;
+      --bg-2: #050712;
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.04);
+      --line: rgba(255,255,255,0.12);
+      --text: #e9f2ff;
+      --muted: #9fb0c7;
+      --radius: 16px;
+      --shadow: 0 10px 40px rgba(0,0,0,0.35);
+
+      /* Brand palette (auto-tinted if you drop a logo) */
+      --primary: #8b5cf6; /* purple */
+      --secondary: #60a5fa; /* blue */
+      --accent: #22d3ee;    /* cyan */
+      --success: #10b981;   /* green */
+      --warn: #f59e0b;      /* amber */
+      --danger: #ef4444;    /* red */
+
+      --mx: 50vw;
+      --my: 50vh;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      background:
+        radial-gradient(1200px 800px at 15% -10%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 60%),
+        radial-gradient(1200px 800px at 100% 110%, color-mix(in oklab, var(--secondary) 10%, transparent), transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Cursor glow */
+    body::before{
+      content:"";
+      position: fixed; inset: -20vmax;
+      pointer-events: none;
+      background: radial-gradient(40vmax 40vmax at var(--mx) var(--my),
+        color-mix(in oklab, var(--primary) 18%, transparent), transparent 55%);
+      mix-blend-mode: screen;
+      z-index: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    .wrap{ width: min(1200px, 92vw); margin: 0 auto; position: relative; z-index: 1; }
+
+    /* Header */
+    .site-header{
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(6,10,24,0.7), rgba(6,10,24,0.45));
+    }
+    .nav{ display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
+    .brand{ display:flex; align-items:center; gap:14px; }
+    .logo{
+      width: 40px; height: 40px; border-radius: 12px; overflow: hidden; display: grid; place-items: center;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, color-mix(in oklab, var(--primary) 50%, transparent), transparent);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.03), 0 8px 20px rgba(0,0,0,0.35);
+    }
+    .logo img{ display:block; width:100%; height:100%; object-fit: cover; }
+    .logo--fallback{
+      display:grid; place-items:center; font-weight:900; letter-spacing:0.6px;
+      font-family: Orbitron, Inter, sans-serif;
+      color: #fff;
+      text-shadow: 0 0 18px color-mix(in oklab, var(--primary) 40%, transparent);
+    }
+    .brand__name{
+      display:flex; flex-direction: column; line-height:1.05;
+    }
+    .brand__title{
+      font-family: Orbitron, Inter, sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:4px 8px; border-radius:999px;
+      border:1px solid color-mix(in oklab, var(--primary) 40%, transparent);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: color-mix(in oklab, var(--primary) 85%, white); font-size: 0.76rem; font-weight: 800; letter-spacing:0.5px;
+    }
+    .nav__links{ display:flex; align-items:center; gap:16px; color: var(--muted); font-weight:600; flex-wrap: wrap; }
+    .nav__links a:hover{ color: var(--text); }
+    .btn{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; font-weight:800; letter-spacing:0.6px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn--primary{
+      border-color: color-mix(in oklab, var(--primary) 45%, transparent);
+      background:
+        linear-gradient(180deg, color-mix(in oklab, var(--primary) 18%, rgba(255,255,255,0.06)),
+                                rgba(255,255,255,0.02));
+      box-shadow: 0 12px 36px -12px color-mix(in oklab, var(--primary) 50%, transparent);
+    }
+    .btn--ghost{
+      border-color: color-mix(in oklab, var(--secondary) 25%, transparent);
+    }
+
+    /* Hero */
+    .hero{
+      position: relative; overflow: hidden; border-bottom: 1px solid var(--line);
+      background:
+        radial-gradient(800px 480px at 50% 0%, rgba(255,255,255,0.06), transparent 60%),
+        linear-gradient(180deg, transparent, rgba(0,0,0,0.35));
+      isolation: isolate;
+    }
+    .heroGrid{
+      position:absolute; inset:-2px; opacity:0.13; pointer-events:none; z-index:0;
+      background:
+        repeating-linear-gradient(to right, rgba(255,255,255,0.06), rgba(255,255,255,0.06) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.06) 1px, transparent 1px, transparent 80px);
+      mask-image: radial-gradient(1200px 600px at 50% 40%, black, transparent 72%);
+    }
+    .hero .wrap{
+      display:grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(18px, 3vw, 40px);
+      align-items:center; padding: clamp(36px, 7vw, 90px) 0 clamp(40px, 9vw, 120px);
+    }
+    @media (max-width: 960px){
+      .hero .wrap{ grid-template-columns: 1fr; }
+    }
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px;
+      border:1px solid color-mix(in oklab, var(--secondary) 35%, transparent);
+      background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(255,255,255,0.03));
+      color: color-mix(in oklab, var(--secondary) 85%, #dff9ff);
+      font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; width:fit-content;
+    }
+    h1{
+      font-family: Orbitron, Inter, sans-serif;
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      line-height:1.05; margin: 14px 0 12px; letter-spacing: 0.3px;
+      text-shadow:
+        0 0 24px color-mix(in oklab, var(--primary) 30%, transparent),
+        0 0 50px color-mix(in oklab, var(--secondary) 18%, transparent);
+    }
+    .grad{
+      background: linear-gradient(90deg, var(--primary), var(--secondary) 55%, var(--accent));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 0 22px color-mix(in oklab, var(--primary) 32%, transparent));
+    }
+    .sub{ color: var(--muted); max-width: 58ch; }
+    .hero__cta{ margin-top:18px; display:flex; gap:12px; flex-wrap:wrap; }
+
+    /* Showcase panel (hero right) */
+    .panel{
+      position: relative; min-height: 420px; height: clamp(380px, 48vw, 520px);
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(1200px 600px at 50% 110%, rgba(255,255,255,0.06), transparent 50%),
+        linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow);
+    }
+    .panel::after{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(300px 260px at var(--mx) var(--my), color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%),
+        radial-gradient(360px 320px at 78% 30%, color-mix(in oklab, var(--secondary) 14%, transparent), transparent 60%);
+      filter: blur(30px); opacity:0.75; mix-blend-mode: screen;
+    }
+    .dash{
+      position:absolute; inset: 0; pointer-events: none; display:grid; grid-template-rows: 1fr auto; padding: 12px;
+      font-family: Orbitron, Inter, sans-serif; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+    }
+    .dash__bar{
+      align-self: end; display:grid; gap:8px; background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; width: min(380px, 70vw); box-shadow: var(--shadow);
+    }
+    .meter{
+      height: 16px; background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line); border-radius: 999px; overflow: hidden;
+    }
+    .meter__fill{
+      height: 100%; width: 35%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      box-shadow: 0 0 16px color-mix(in oklab, var(--primary) 30%, transparent),
+                  0 0 30px color-mix(in oklab, var(--secondary) 20%, transparent) inset;
+      transition: width 160ms linear;
+    }
+
+    /* Sections */
+    section{ padding: clamp(56px, 7vw, 96px) 0; position: relative; }
+    .section__head{ margin-bottom: 26px; display:flex; align-items: baseline; justify-content: space-between; gap:16px; flex-wrap: wrap; }
+    .section__title{ font-family: Orbitron, Inter, sans-serif; font-weight: 800; font-size: clamp(1.6rem, 2.6vw, 2.4rem); }
+    .muted{ color: var(--muted); }
+    .grid{ display:grid; gap: 18px; grid-template-columns: repeat(12, 1fr); }
+    .col-4{ grid-column: span 4; }
+    .col-6{ grid-column: span 6; }
+    .col-12{ grid-column: span 12; }
+    @media (max-width: 1020px){ .col-6{ grid-column: span 12; } .col-4{ grid-column: span 6; } }
+    @media (max-width: 640px){ .col-4{ grid-column: span 12; } }
+
+    .card{
+      height: 100%; padding: 18px; border-radius: var(--radius);
+      border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      position: relative; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .card::before{
+      content: ""; position:absolute; inset:-1px;
+      background: conic-gradient(from 180deg at 50% 50%, transparent 0 54%, color-mix(in oklab, var(--primary) 26%, transparent) 62%, transparent 100%);
+      filter: blur(22px); opacity: 0; transition: 220ms ease; pointer-events:none;
+    }
+    .card:hover::before{ opacity: 0.8; }
+    .icon{
+      width: 42px; height: 42px; border-radius: 10px; display:grid; place-items:center;
+      border:1px solid var(--line);
+      background: radial-gradient(circle at 30% 30%, var(--primary), rgba(255,255,255,0.08) 60%);
+      box-shadow: 0 0 30px color-mix(in oklab, var(--primary) 38%, transparent);
+      margin-bottom: 10px;
+    }
+    .card h3{ margin: 6px 0 8px; font-family: Orbitron, Inter, sans-serif; font-size: 1.05rem; }
+
+    .list{ margin: 10px 0 0 0; padding-left: 18px; }
+    .list li{ margin: 6px 0; }
+
+    /* Flow Animation container (How it works) */
+    .flowCard{
+      padding: 18px; border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(139,92,246,0.10), rgba(0,0,0,0.35));
+      box-shadow: var(--shadow);
+    }
+    .flowCard h3{ font-family: Orbitron, Inter, sans-serif; margin: 0 0 6px; }
+    .flowCard p{ margin: 0 0 16px; color: var(--muted); }
+    .flowWrap{ position: relative; width:100%; min-height: 220px; aspect-ratio: 9/4; }
+
+    /* Download Note */
+    .note{
+      display:flex; gap: 12px; align-items:flex-start;
+      border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: var(--muted);
+    }
+
+    /* Footer */
+    .site-footer{
+      border-top:1px solid var(--line); padding: 28px 0 36px; color: var(--muted);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    }
+    .frow{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap: wrap; }
+    .social{ display:flex; gap:10px; }
+    .social a{
+      width: 38px; height: 38px; display:grid; place-items:center;
+      border-radius: 10px; border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: var(--text);
+    }
+    .social a:hover{ border-color: color-mix(in oklab, var(--primary) 35%, transparent); }
+
+    /* Utilities */
+    .tilt{ transform-style: preserve-3d; transform: perspective(900px) rotateX(0) rotateY(0); transition: transform 180ms ease; }
+    .lift{ transform: translateZ(30px); }
+    .kbd{ padding:3px 7px; border:1px solid var(--line); border-radius:6px; background: rgba(255,255,255,0.06); }
+    .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,0.06); }
+    .ok { color: color-mix(in oklab, var(--success) 85%, white); }
+    .warn { color: color-mix(in oklab, var(--warn) 85%, white); }
+
+    /* Prefers reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *, *::before, *::after{ animation: none !important; transition: none !important; }
+      .tilt{ transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" id="logoBox" title="Drop your logo here to auto-tint">
+          <!-- If a logo.png/svg is in the same folder, it will show; otherwise fallback -->
+          <img id="logoImg" src="logo.svg" alt="Vutrium logo" onerror="this.style.display='none';document.getElementById('logoFallback').style.display='grid';" />
+          <div id="logoFallback" class="logo--fallback" style="display:none;">V</div>
+        </div>
+        <div class="brand__name">
+          <span class="brand__title">Vutrium</span>
+          <span class="badge">Beta • in development</span>
+        </div>
+      </div>
+
+      <nav class="nav__links" aria-label="primary">
+        <a href="#features">Features</a>
+        <a href="#how">How it Works</a>
+        <a href="#usage">Usage</a>
+        <a href="#download" class="btn btn--ghost">Download</a>
+        <button id="themeToggle" class="btn" title="Switch Tint">Switch Tint</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="heroGrid" aria-hidden="true"></div>
+      <div class="wrap">
+        <div>
+          <div class="eyebrow">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M3 16h10M7 8h10" stroke="currentColor" opacity="0.7" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Rocket League Ai + SDK
+          </div>
+          <h1>
+            Elevate your flow with
+            <span class="grad">visuals, AI, and in‑process control.</span>
+          </h1>
+          <p class="sub">
+            Vutrium blends a real‑time internal SDK with assistive overlays and bot integration. It can read game state and drive inputs through a DLL bridge — designed for experiments, training, and tooling.
+          </p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="#download">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l4-4m-4 4l-4-4M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Download Vutrium.exe
+            </a>
+            <a class="btn" href="#how">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Learn how it works
+            </a>
+          </div>
+        </div>
+
+        <!-- Minimal preview dashboard -->
+        <div class="panel tilt" id="panel">
+          <div class="dash">
+            <div></div>
+            <div class="dash__bar lift">
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--muted);">
+                <span>Status</span>
+                <span id="statusText" class="ok">Connected</span>
+              </div>
+              <div class="meter"><div id="boostFill" class="meter__fill" style="width: 72%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 class="section__title">Features</h2>
+          <div class="muted">Visuals, chat assists, and bot integration.</div>
+        </div>
+
+        <div class="grid">
+          <div class="col-4">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M4 12h5m6 0h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="lift">Visuals</h3>
+              <ul class="list">
+                <li>Boost pad timers with reactivation countdowns</li>
+                <li>Car ESP with per‑car accurate hitboxes</li>
+                <li>Controller overlay (compare bot vs human inputs in one view)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-4">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 5h16v8l-6 6H4V5z" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M8 9h8M8 12h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="lift">Chat</h3>
+              <ul class="list">
+                <li>AI auto‑responses in quick‑chat style</li>
+                <li>Defensive replies to accusations or toxicity (toggleable)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-4">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 13l5-7 4 5 3-2 4 7H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3 class="lift">Bot</h3>
+              <ul class="list">
+                <li>Integrated Nexto bot</li>
+                <li>Splitscreen support (multiple bots in one instance)</li>
+                <li>Auto skip replay for all local players</li>
+                <li>Auto forfeit for local players</li>
+                <li class="pill"><span class="ok">New</span> Auto Queue (let the bot play AFK)</li>
+                <li class="pill"><span class="ok">New</span> Optional Discord Webhook for game logs</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 20V8l8-4 8 4v12H4z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+              <h3 class="lift">SDK / Dev</h3>
+              <p class="muted">
+                Vutrium exposes an internal SDK for reading game state (players, ball, boosts) and writing inputs in process, aiming to stay compatible with the game’s physics and control model.
+              </p>
+              <ul class="list">
+                <li>DLL bridge for real‑time memory access</li>
+                <li>Data frames: positions, velocities, boost states, events</li>
+                <li>Client control path for inputs at high frequency</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 4h8M4 8h16M4 12h16M4 16h16M8 20h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <h3 class="lift">Open Source & Templates</h3>
+              <p class="muted">
+                Current Vutrium build is not open source. There’s a very old, outdated version available publicly, and a template to help you build RLSDK‑based tools:
+              </p>
+              <ul class="list">
+                <li>Legacy (outdated) repo: <a href="https://github.com/tntgamer685347/vutriumbot" target="_blank" rel="noopener">tntgamer685347/vutriumbot</a></li>
+                <li>RLSDK template: <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener">TNTsTemplate</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 class="section__title">How it Works</h2>
+          <div class="muted">Real‑time, bidirectional pipeline between the game and the client.</div>
+        </div>
+
+        <div class="flowCard tilt">
+          <h3 class="lift">Data Flow Architecture</h3>
+          <p class="lift">DLL injection sets up an in‑process SDK inside Rocket League. Game state streams to the client (AI / Nexto / tools), which returns control inputs at high frequency.</p>
+
+          <div class="flowWrap lift">
+            <!-- Pure HTML/SVG version of your FlowAnimation, restyled to match this site -->
+            <svg viewBox="0 0 900 400" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="vutrium-flow-title" width="100%" height="100%">
+              <title id="vutrium-flow-title">Vutrium data flow: DLL injection into Rocket League, in-process SDK, bidirectional data with client</title>
+
+              <defs>
+                <linearGradient id="g-purple" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#e879f9"/>
+                  <stop offset="50%" stop-color="#a855f7"/>
+                  <stop offset="100%" stop-color="#7c3aed"/>
+                </linearGradient>
+                <linearGradient id="g-blue" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#3b82f6"/>
+                </linearGradient>
+                <linearGradient id="g-green" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#34d399"/>
+                  <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+
+                <!-- Animated gradient to keep the neon vibe alive -->
+                <linearGradient id="g-animated" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#e879f9">
+                    <animate attributeName="stop-color" values="#e879f9;#60a5fa;#e879f9" dur="3s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="50%" stop-color="#a855f7">
+                    <animate attributeName="stop-color" values="#a855f7;#3b82f6;#a855f7" dur="3s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="100%" stop-color="#7c3aed">
+                    <animate attributeName="stop-color" values="#7c3aed;#1e40af;#7c3aed" dur="3s" repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3" result="b"/>
+                  <feMerge>
+                    <feMergeNode in="b"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" result="sb"/>
+                  <feMerge>
+                    <feMergeNode in="sb"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+
+                <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="url(#g-purple)" />
+                </marker>
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="url(#g-blue)" />
+                </marker>
+                <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="url(#g-green)" />
+                </marker>
+              </defs>
+
+              <!-- Injector -->
+              <g transform="translate(0,0)">
+                <g transform="translate(40,140)" filter="url(#soft)">
+                  <rect x="0" y="0" width="200" height="120" rx="20" fill="rgba(139,92,246,0.10)" stroke="url(#g-purple)" stroke-width="2"/>
+                  <rect x="0" y="0" width="200" height="120" rx="20" fill="rgba(139,92,246,0.05)"/>
+                  <circle cx="100" cy="40" r="20" fill="url(#g-purple)" opacity="0.2"/>
+                  <path d="M 90 40 L 110 40 M 100 30 L 100 50" stroke="url(#g-purple)" stroke-width="3" stroke-linecap="round"/>
+                  <text x="100" y="80" text-anchor="middle" font-size="18" font-weight="600" fill="white">Injector</text>
+                  <text x="100" y="98" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.6)">Vutrium.exe</text>
+                </g>
+              </g>
+
+              <!-- Rocket League -->
+              <g transform="translate(320,100)" filter="url(#soft)">
+                <rect x="0" y="0" width="260" height="200" rx="20" fill="rgba(59,130,246,0.12)" stroke="url(#g-blue)" stroke-width="2"/>
+                <rect x="0" y="0" width="260" height="200" rx="20" fill="rgba(59,130,246,0.05)"/>
+                <circle cx="130" cy="60" r="25" fill="url(#g-blue)" opacity="0.2"/>
+                <circle cx="130" cy="60" r="15" fill="none" stroke="url(#g-blue)" stroke-width="3"/>
+                <circle cx="130" cy="60" r="5" fill="url(#g-blue)"/>
+                <text x="130" y="110" text-anchor="middle" font-size="20" font-weight="600" fill="white">Rocket League</text>
+                <text x="130" y="130" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.6)">Game Process</text>
+                <rect x="45" y="150" width="170" height="30" rx="15" fill="rgba(16,185,129,0.2)" stroke="rgba(16,185,129,0.5)" stroke-width="1"/>
+                <text x="130" y="169" text-anchor="middle" font-size="12" fill="#10b981">Vutrium SDK (In‑Process)</text>
+              </g>
+
+              <!-- Client -->
+              <g transform="translate(660,140)" filter="url(#soft)">
+                <rect x="0" y="0" width="200" height="120" rx="20" fill="rgba(16,185,129,0.12)" stroke="url(#g-green)" stroke-width="2"/>
+                <rect x="0" y="0" width="200" height="120" rx="20" fill="rgba(16,185,129,0.05)"/>
+                <rect x="90" y="30" width="20" height="20" rx="4" fill="url(#g-green)" opacity="0.35"/>
+                <rect x="85" y="25" width="20" height="20" rx="4" fill="none" stroke="url(#g-green)" stroke-width="2"/>
+                <rect x="95" y="35" width="20" height="20" rx="4" fill="none" stroke="url(#g-green)" stroke-width="2"/>
+                <text x="100" y="80" text-anchor="middle" font-size="18" font-weight="600" fill="white">Client</text>
+                <text x="100" y="98" text-anchor="middle" font-size="13" fill="rgba(255,255,255,0.6)">AI / Nexto / Tools</text>
+              </g>
+
+              <!-- Paths -->
+              <path id="inject-path" d="M 240 200 Q 280 200 320 200"
+                    fill="none" stroke="url(#g-animated)" stroke-width="3" stroke-dasharray="5 5"
+                    marker-end="url(#arrow-purple)" opacity="0.85">
+                <animate attributeName="stroke-dashoffset" from="10" to="0" dur="0.6s" repeatCount="indefinite"/>
+              </path>
+
+              <path id="data-forward" d="M 580 160 Q 620 160 660 180"
+                    fill="none" stroke="url(#g-blue)" stroke-width="2.6"
+                    marker-end="url(#arrow-blue)" opacity="0.8"/>
+              <path id="data-back" d="M 660 220 Q 620 240 580 240"
+                    fill="none" stroke="url(#g-green)" stroke-width="2.6"
+                    marker-end="url(#arrow-green)" opacity="0.8"/>
+
+              <!-- Particles -->
+              <g filter="url(#glow)">
+                <!-- Injection -->
+                <circle r="4" fill="#e879f9">
+                  <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#inject-path"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- Forward particles -->
+                <circle r="3" fill="#60a5fa">
+                  <animateMotion dur="1.5s" begin="0s" repeatCount="indefinite"><mpath href="#data-forward"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="0s" repeatCount="indefinite"/>
+                </circle>
+                <circle r="3" fill="#60a5fa">
+                  <animateMotion dur="1.5s" begin="0.5s" repeatCount="indefinite"><mpath href="#data-forward"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle r="3" fill="#60a5fa">
+                  <animateMotion dur="1.5s" begin="1s" repeatCount="indefinite"><mpath href="#data-forward"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="1s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- Back particles -->
+                <circle r="3" fill="#34d399">
+                  <animateMotion dur="1.5s" begin="0.25s" repeatCount="indefinite"><mpath href="#data-back"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="0.25s" repeatCount="indefinite"/>
+                </circle>
+                <circle r="3" fill="#34d399">
+                  <animateMotion dur="1.5s" begin="0.75s" repeatCount="indefinite"><mpath href="#data-back"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="0.75s" repeatCount="indefinite"/>
+                </circle>
+                <circle r="3" fill="#34d399">
+                  <animateMotion dur="1.5s" begin="1.25s" repeatCount="indefinite"><mpath href="#data-back"/></animateMotion>
+                  <animate attributeName="opacity" values="0;1;1;0" dur="1.5s" begin="1.25s" repeatCount="indefinite"/>
+                </circle>
+              </g>
+
+              <!-- Labels -->
+              <text x="280" y="185" font-size="12" font-weight="600" fill="rgba(255,255,255,0.7)">DLL Injection</text>
+              <text x="620" y="155" font-size="12" font-weight="600" fill="rgba(255,255,255,0.7)">Game State</text>
+              <text x="620" y="255" font-size="12" font-weight="600" fill="rgba(255,255,255,0.7)">Control Input</text>
+
+              <!-- Performance badge -->
+              <g transform="translate(450, 340)">
+                <rect x="-80" y="-15" width="160" height="30" rx="15" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <text x="0" y="6" text-anchor="middle" font-size="11" fill="rgba(255,255,255,0.6)">Latency: &lt;1ms • 120 Hz</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="note" style="margin-top:14px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-top:2px"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <div>
+              Vutrium is for educational/experimental use. Using tools that modify game memory or automate inputs in online modes may violate the game’s Terms of Service and can result in bans. Proceed at your own risk.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USAGE -->
+    <section id="usage">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 class="section__title">Usage & Requirements</h2>
+          <div class="muted">Fast setup with a minimal UI for configuration.</div>
+        </div>
+
+        <div class="grid">
+          <div class="col-6">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 7h12v10H6z" stroke="currentColor" stroke-width="1.8"/><path d="M10 7l.5-2h3L14 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <h3 class="lift">How to run</h3>
+              <ul class="list">
+                <li>Run <b>Vutrium.exe</b> — it will inject the SDK and initialize.</li>
+                <li>Open the in‑game GUI with <span class="kbd">Insert</span>.</li>
+                <li>Bot toggle key: <span class="kbd">F1</span>.</li>
+                <li>Optional: set a Discord webhook URL for game logs.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="card tilt">
+              <div class="icon lift">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 8h16M7 12h10M9 16h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <h3 class="lift">Requirements</h3>
+              <ul class="list">
+                <li>Windows 10/11 (64‑bit)</li>
+                <li>Rocket League on PC</li>
+                <li>CPU: Dual‑core 2.0 GHz or higher • RAM: 4 GB • Storage: 1 GB</li>
+                <li>GPU: Integrated is fine (Nexto runs on CPU)</li>
+                <li><a href="https://www.python.org/downloads/release/python-3110/" target="_blank" rel="noopener">Python 3.11</a> may be required</li>
+              </ul>
+              <p class="muted" style="margin-top:10px">These are minimums for Vutrium, not for Rocket League itself.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD -->
+    <section id="download">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 class="section__title">Download</h2>
+          <div class="muted">Current beta build. Not open source.</div>
+        </div>
+
+        <div class="card tilt">
+          <div style="display:flex; gap:16px; flex-wrap: wrap; align-items:center; justify-content: space-between;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="pill">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0l4-4m-4 4l-4-4M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Vutrium.exe
+              </span>
+              <span class="muted">Windows • x64</span>
+            </div>
+            <a class="btn btn--primary" id="dlBtn" href="https://github.com/tntgamer685347/VutriumBot/releases/download/Current/vutrium.exe" target="_blank" rel="noopener">
+              Download
+            </a>
+          </div>
+
+          <div class="note" style="margin-top:14px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-top:2px"><path d="M12 9v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+            <div>
+              The current build is closed‑source. A <b>very old</b>, outdated open‑source version is available here:
+              <a href="https://github.com/tntgamer685347/vutriumbot" target="_blank" rel="noopener">tntgamer685347/vutriumbot</a>. For new development, see the RLSDK template:
+              <a href="https://github.com/tntgamer685347/TNTsTemplate" target="_blank" rel="noopener">TNTsTemplate</a>.
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:10px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-top:2px"><path d="M12 8v5m0 3h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+            <div>
+              Vutrium is intended for educational and experimental use. Using it in online/ ranked modes may lead to account penalties. You are responsible for how you use it.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap frow">
+      <div>© <span id="year"></span> Vutrium — Fan‑made Rocket League themed tool UI</div>
+      <div class="social">
+        <a href="#" aria-label="Discord"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8.2 8.6c.7 0 1.3.6 1.3 1.3s-.6 1.3-1.3 1.3S6.9 10.6 6.9 9.9s.6-1.3 1.3-1.3zm7.6 0c.7 0 1.3.6 1.3 1.3s-.6 1.3-1.3 1.3-1.3-.6-1.3-1.3.6-1.3 1.3-1.3z" fill="currentColor"/><path d="M19 5.6A16.2 16.2 0 0 0 15.5 4l-.3.5a14.2 14.2 0 0 1 3.2 1.5A12.8 12.8 0 0 0 14.7 5l-.3.6c-1-.1-2-.1-3 0L11 5a12.8 12.8 0 0 0-3.7 1c1-.6 2.1-1.2 3.2-1.5L10.2 4A16.2 16.2 0 0 0 7 5.6 16.4 16.4 0 0 0 3.1 18a16.1 16.1 0 0 0 4.9 1.9l.9-1.4a10.7 10.7 0 0 1-1.6-.6l.3-.3c3 1.4 6.6 1.4 9.6 0l.3.3a10.7 10.7 0 0 1-1.6.6l.9 1.4A16.1 16.1 0 0 0 21 18a16.4 16.4 0 0 0-2-12.4z" fill="currentColor"/></svg></a>
+        <a href="#" aria-label="Twitch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 3h15v10l-4 4h-4l-2 2H7v-2H4V3zm3 2v10h3v2l2-2h3l3-3V5H7z" fill="currentColor"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 12s0-3.4-.4-4.9c-.2-.8-.8-1.4-1.6-1.6C19.4 5 12 5 12 5s-7.4 0-9 .5c-.8.2-1.4.8-1.6 1.6C1 8.6 1 12 1 12s0 3.4.4 4.9c.2.8.8 1.4 1.6 1.6 1.6.5 9 .5 9 .5s7.4 0 9-.5c.8-.2 1.4-.8 1.6-1.6.4-1.5.4-4.9.4-4.9z" fill="currentColor"/><path d="M10 15l5-3-5-3v6z" fill="#000"/></svg></a>
+        <a href="#" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 3l7.6 9.5L3 21h2.6l6-6.8L17.6 21H21l-7.8-9.6L21 3h-2.6l-5.6 6.4L6.4 3H3z" fill="currentColor"/></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Basic utilities
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+    // Year
+    $('#year').textContent = new Date().getFullYear();
+
+    // Pointer glow coords
+    window.addEventListener('mousemove', (e) => {
+      const root = document.documentElement;
+      root.style.setProperty('--mx', e.clientX + 'px');
+      root.style.setProperty('--my', e.clientY + 'px');
+    });
+
+    // Tilt cards
+    $$('.tilt').forEach(el => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - 0.5) * -8;
+        const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
+        el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        el.style.transform = 'perspective(900px) rotateX(0) rotateY(0)';
+      });
+    });
+
+    // Hero demo meter bobbing
+    const boostFill = $('#boostFill');
+    let t0 = performance.now();
+    function animateMeter(t){
+      const p = (t - t0) / 1000;
+      const v = 65 + Math.sin(p * 1.5) * 20;
+      boostFill.style.width = v.toFixed(1) + '%';
+      requestAnimationFrame(animateMeter);
+    }
+    requestAnimationFrame(animateMeter);
+
+    // Theme toggle (rotate between a few tasteful tints)
+    const palettes = [
+      { p:'#8b5cf6', s:'#60a5fa', a:'#22d3ee' }, // purple/blue
+      { p:'#f97316', s:'#8b5cf6', a:'#60a5fa' }, // orange/purple
+      { p:'#06b6d4', s:'#22c55e', a:'#60a5fa' }, // cyan/green
+    ];
+    let themeIdx = 0;
+    $('#themeToggle').addEventListener('click', () => {
+      themeIdx = (themeIdx + 1) % palettes.length;
+      applyPalette(palettes[themeIdx]);
+    });
+    function applyPalette({p,s,a}){
+      const root = document.documentElement.style;
+      root.setProperty('--primary', p);
+      root.setProperty('--secondary', s);
+      root.setProperty('--accent', a);
+    }
+
+    // Drag & drop a logo to auto-tint palette (average color)
+    const logoBox = $('#logoBox');
+    const logoImg = $('#logoImg');
+    function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => logoBox.addEventListener(ev, prevent, false));
+    logoBox.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files?.[0];
+      if(!file) return;
+      const url = URL.createObjectURL(file);
+      logoImg.src = url;
+      logoImg.style.display = 'block';
+      $('#logoFallback').style.display = 'none';
+      setTimeout(() => autoTintFromImage(logoImg), 120);
+    });
+    logoImg.addEventListener('load', () => {
+      // If user had a local logo.svg/png in same folder, try to tint once
+      autoTintFromImage(logoImg);
+    });
+
+    function autoTintFromImage(img){
+      try{
+        const cnv = document.createElement('canvas');
+        const w = cnv.width = 48, h = cnv.height = 48;
+        const ctx = cnv.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0,0,w,h).data;
+        let r=0,g=0,b=0,c=0;
+        for(let i=0;i<data.length;i+=4){
+          const a = data[i+3];
+          if(a < 64) continue; // ignore transparent
+          r += data[i]; g += data[i+1]; b += data[i+2]; c++;
+        }
+        if(c === 0) return;
+        r = Math.round(r/c); g = Math.round(g/c); b = Math.round(b/c);
+        const [hue, sat, light] = rgbToHsl(r,g,b);
+        // Build a palette based on hue
+        const primary = hslToCss(hue, Math.min(80, sat+10), Math.max(45, 50));
+        const secondary = hslToCss((hue + 280) % 360, 75, 60);
+        const accent = hslToCss((hue + 320) % 360, 75, 60);
+        applyPalette({p:primary, s:secondary, a:accent});
+      }catch(_e){}
+    }
+    function rgbToHsl(r, g, b){
+      r/=255; g/=255; b/=255;
+      const max=Math.max(r,g,b), min=Math.min(r,g,b);
+      let h, s, l=(max+min)/2;
+      if(max===min){ h=s=0; }
+      else{
+        const d=max-min;
+        s= l>0.5 ? d/(2-max-min) : d/(max+min);
+        switch(max){
+          case r: h=(g-b)/d + (g<b?6:0); break;
+          case g: h=(b-r)/d + 2; break;
+          case b: h=(r-g)/d + 4; break;
+        }
+        h*=60;
+      }
+      return [Math.round(h), Math.round(s*100), Math.round(l*100)];
+    }
+    function hslToCss(h,s,l){ return `hsl(${h} ${s}% ${l}%)`; }
+
+    // Smooth scroll for anchor links
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if(!a) return;
+      const id = a.getAttribute('href');
+      if(id.length > 1 && $(id)){
+        e.preventDefault();
+        $(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
+    // Minimal "clicked download" visual feedback
+    $('#dlBtn').addEventListener('click', () => {
+      const btn = $('#dlBtn');
+      const original = btn.textContent;
+      btn.textContent = 'Preparing...';
+      setTimeout(() => { btn.textContent = original; }, 900);
+    });
+
+    // Accessibility: reduce "Connected" status pulse to static if prefers-reduced-motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      $('#statusText').classList.remove('ok');
+    }
+  </script>
+</body>
+</html>
