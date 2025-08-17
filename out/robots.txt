@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://needlesspage819.github.io/VutriumSite/sitemap.xml
+Resellers: https://needlesspage819.github.io/VutriumSite/resellers
+
